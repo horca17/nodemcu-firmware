@@ -1,6 +1,7 @@
 wifi.setmode(wifi.SOFTAP)
 wifi.ap.config({ssid="test",pwd="12345678"})
-gpio.mode(1, gpio.OUTPUT)
+wifi.sta.connect()
+gpio.mode(4, gpio.OUTPUT)
 srv=net.createServer(net.TCP)
 srv:listen(80,function(conn)
     conn:on("receive", function(client,request)
@@ -15,16 +16,16 @@ srv:listen(80,function(conn)
                 _GET[k] = v
             end
         end
-        buf = buf.."<h1> Hello, NodeMcu.</h1><form src=\"/\">Turn PIN1 <select name=\"pin\" onchange=\"form.submit()\">"
+        buf = buf.."HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1> Hello, NodeMcu.</h1><form src=\"/\">Turn PIN1 <select name=\"pin\" onchange=\"form.submit()\">"
         local _on,_off = "",""
         if(_GET.pin == "ON")then
               _on = " selected=true"
-              gpio.write(1, gpio.HIGH)
+              gpio.write(4, gpio.HIGH)
         elseif(_GET.pin == "OFF")then
               _off = " selected=\"true\""
-              gpio.write(1, gpio.LOW)
+              gpio.write(4, gpio.LOW)
         end
-        buf = buf.."<option".._on..">ON</opton><option".._off..">OFF</option></select></form>"
+        buf = buf.."<option".._off..">OFF</option><option".._on..">ON</option></select></form>"
         client:send(buf)
     end)
     conn:on("sent", function (c) c:close() end)
